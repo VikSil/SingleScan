@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { CameraView, Camera, useCameraPermissions } from "expo-camera";
-import {Link, Stack} from "expo-router";
+import {Link} from "expo-router";
 
 
 export default function  Home() {
@@ -16,11 +16,7 @@ export default function  Home() {
             </Text>
 
             <Pressable onPress={requestPermission}><Text style = {styles.button}>Request permissions</Text></Pressable>
-            <Link href={"/scanner"} as Child>
-                <Pressable disabled ={!permissionGranted}>
-                    <Text style = {[styles.button, {color: !permissionGranted ? "red": "green"}]}>ScanCode</Text>
-                </Pressable>
-            </Link>
+            <Link disabled = {!permissionGranted} href= "/scanner">Click Me!</Link>
         </View>
     )
 }
@@ -38,5 +34,6 @@ const styles = StyleSheet.create({
         color: "green",
         fontSize: 17,
         textAlign: "center",
+        padding:20,
     }
 })

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "scheme": "your-app-scheme",
+    "scheme": "offer-checker",
     "name": "OfferChecker",
     "slug": "OfferChecker",
     "version": "1.0.0",
