@@ -2,10 +2,15 @@ import { StyleSheet, Text, View, AppState, Image } from 'react-native';
 import { CameraView } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 
+import {getItemDetails} from '../utils/api';
+
 export default function Scanner() {
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
   const [barcode, setBarcode] = useState('Scan a barcode');
+  const [imageSource, setImageSource] = useState("https://images.awesomebooks.com/images/books/small/97805/9780552992107.jpg");
+  const [author, setAuthor] = useState("");
+  const [title, setTitle ] = useState("");
 
   //   useEffect(() => {
   //     const subscription = AppState.addEventListener('change', (nextAppState) => {
@@ -33,19 +38,31 @@ export default function Scanner() {
           if (barcode != data) {
             console.log('data', data);
             setBarcode(data);
+
+            getItemDetails(data)
+            .then((data) => {
+              console.log('response', data);
+              setImageSource(data.ImageURL);
+              setAuthor(data.Author);
+              setTitle(data.Title);
+
+            })
+            .catch((error) => {
+              console.log("error happened: ", error);
+            })
           }
         }}
       />
       <View style={styles.itemDetails}>
         <Image
           source={{
-            uri: 'http://images.awesomebooks.com/images/books/small/97805/9780552992107.jpg',
+            uri: imageSource,
           }}
           style={styles.image}
         />
         <View>
-          <Text style={styles.author}>Author Name</Text>
-          <Text style={styles.title}>Book Title</Text>
+          <Text style={styles.author}>{author}</Text>
+          <Text style={styles.title}>{title}</Text>
         </View>
       </View>
     </View>
