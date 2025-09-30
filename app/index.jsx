@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native';
-import { CameraView, Camera, useCameraPermissions } from "expo-camera";
+import { useCameraPermissions } from "expo-camera";
 import {Link} from "expo-router";
 
 
