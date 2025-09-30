@@ -2,31 +2,45 @@ import { StyleSheet, Text, View, AppState, Image } from 'react-native';
 import { CameraView } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 
-import {getItemDetails} from '../utils/api';
+import {
+  getItemDetails,
+  getWeBuyBooksToken,
+  getWeBuyBooksOffer,
+} from '../utils/api';
 
 export default function Scanner() {
-  const qrLock = useRef(false);
-  const appState = useRef(AppState.currentState);
   const [barcode, setBarcode] = useState('Scan a barcode');
-  const [imageSource, setImageSource] = useState("https://images.awesomebooks.com/images/books/small/97805/9780552992107.jpg");
-  const [author, setAuthor] = useState("");
-  const [title, setTitle ] = useState("");
+  const [imageSource, setImageSource] = useState(
+    'https://images.awesomebooks.com/images/books/small/97805/9780552992107.jpg'
+  );
+  const [author, setAuthor] = useState('');
+  const [title, setTitle] = useState('');
 
-  //   useEffect(() => {
-  //     const subscription = AppState.addEventListener('change', (nextAppState) => {
-  //       if (
-  //         appState.current.match(/inactive|background/) && nextAppState === 'active'
-  //       ) {
-  //         qrLock.current = false;
-  //       }
-  //       appState.current = nextAppState;
-  //     });
+  const [weBuyBooksToken, setWeBuyBooksToken] = useState(null);
+  const [ziffitToken, setZiffitToken] = useState(null);
+  const [sellItBackBasket, setSellItBackBasket] = useState(null);
+  const [readyToScan, setReadyToScan] = useState(false);
 
-  //     return () => {
-  //       subscription.remove();
-  //     };
-  //   }, []);
+  const [weBuyBooksOffer, setWeBuyBooksOffer] = useState('Nothing');
+  const [ZiffitOffer, setZiffitOffer] = useState('Nothing');
+  const [sellItBackOffer, setSellItBackOffer] = useState('Nothing');
 
+  useEffect(() => {
+    if (weBuyBooksToken === null) {
+      getWeBuyBooksToken()
+        .then((data) => {
+          console.log(data);
+          setWeBuyBooksToken(data.access_token);
+          console.log(weBuyBooksToken);
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          setReadyToScan(true);
+        });
+    }
+  });
 
   return (
     <View style={styles.container}>
@@ -40,16 +54,30 @@ export default function Scanner() {
             setBarcode(data);
 
             getItemDetails(data)
-            .then((data) => {
-              console.log('response', data);
-              setImageSource(data.ImageURL);
-              setAuthor(data.Author);
-              setTitle(data.Title);
+              .then((data) => {
+                //console.log('Item Details response', data);
+                setImageSource(data.ImageURL);
+                setAuthor(data.Author);
+                setTitle(data.Title);
+              })
+              .catch((error) => {
+                console.log('error happened while getting item data: ', error);
+              });
 
-            })
-            .catch((error) => {
-              console.log("error happened: ", error);
-            })
+            getWeBuyBooksOffer({ ISBN: barcode, token: weBuyBooksToken })
+              .then((weBuyBooksResponse) => {
+                console.log('BuyBooksResponse response ', weBuyBooksResponse);
+                setWeBuyBooksOffer(weBuyBooksResponse.price);
+              })
+              .catch((error) => {
+                console.log('error happened in WeBuy Books request: ', error);
+                if (error.error == 'not_accepted') {
+                  setWeBuyBooksOffer('No Offer');
+                }
+                if (error.error == 'not_found') {
+                  setWeBuyBooksOffer('Unrecognised');
+                }
+              });
           }
         }}
       />
@@ -64,6 +92,18 @@ export default function Scanner() {
           <Text style={styles.author}>{author}</Text>
           <Text style={styles.title}>{title}</Text>
         </View>
+      </View>
+
+      <View syle={styles.offer}>
+        <Text>{weBuyBooksOffer}</Text>
+      </View>
+
+      <View syle={styles.offer}>
+        <Text>{ZiffitOffer}</Text>
+      </View>
+
+      <View syle={styles.offer}>
+        <Text>{sellItBackOffer}</Text>
       </View>
     </View>
   );
@@ -103,7 +143,7 @@ const styles = StyleSheet.create({
   itemDetails: {
     flex: 1,
     flexDirection: 'row',
-    margin : 10,
+    margin: 10,
   },
   author: {
     fontWeight: 'bold',
@@ -113,10 +153,15 @@ const styles = StyleSheet.create({
   },
   image: {
     width: 70,
-    height:70,
+    height: 70,
     resizeMode: 'contain',
-    
-    
-
+  },
+  offer: {
+    fontsize: 30,
+    color: 'blue',
+    justifyContent: 'center',
+    height: 70,
+    borderRadius: 20,
+    borderColor: 'green',
   },
 });
