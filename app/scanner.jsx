@@ -3,9 +3,12 @@ import { CameraView } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 
 import {
-  getItemDetails,
+  getSellItBackOffer,
   getWeBuyBooksToken,
   getWeBuyBooksOffer,
+  initialiseSellItBack,
+  getZiffitToken,
+  getZiffitOffer,
 } from '../utils/api';
 
 export default function Scanner() {
@@ -18,11 +21,25 @@ export default function Scanner() {
 
   const [weBuyBooksToken, setWeBuyBooksToken] = useState(null);
   const [ziffitToken, setZiffitToken] = useState(null);
-  const [sellItBackBasket, setSellItBackBasket] = useState(null);
+  const [sellItBackInitialised, setSellItBackInitialised] = useState(false);
   const [readyToScan, setReadyToScan] = useState(false);
 
+  const [weBuyBooksTitle, setWeBuyBooksTitle] = useState('---');
+  const [ziffitTitle, setZiffitTitle] = useState('---');
+  const [sellItBackTitle, setSellItBackTitle] = useState('---');
+
+  const [weBuyBooksImage, setWeBuyBooksImage] = useState(
+    'https://images.awesomebooks.com/images/books/small/97805/9780552992107.jpg'
+  );
+  const [ZiffitImage, setZiffitImage] = useState(
+    'https://images.awesomebooks.com/images/books/small/97805/9780552992107.jpg'
+  );
+  const [sellItBackImage, setSellItBackImage] = useState(
+    'https://images.awesomebooks.com/images/books/small/97805/9780552992107.jpg'
+  );
+
   const [weBuyBooksOffer, setWeBuyBooksOffer] = useState('Nothing');
-  const [ZiffitOffer, setZiffitOffer] = useState('Nothing');
+  const [ziffitOffer, setZiffitOffer] = useState('Nothing');
   const [sellItBackOffer, setSellItBackOffer] = useState('Nothing');
 
   useEffect(() => {
@@ -31,13 +48,40 @@ export default function Scanner() {
         .then((data) => {
           console.log(data);
           setWeBuyBooksToken(data.access_token);
+          if (ziffitToken != null) {
+            setReadyToScan(true);
+          }
           console.log(weBuyBooksToken);
         })
         .catch((error) => {
           console.log(error);
+        });
+    }
+
+    if (ziffitToken === null) {
+      getZiffitToken()
+        .then((data) => {
+          console.log(data);
+          setZiffitToken(data);
+          if (weBuyBooksToken != null) {
+            setReadyToScan(true);
+          }
+          console.log(ziffitToken);
         })
-        .finally(() => {
-          setReadyToScan(true);
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    if (!sellItBackInitialised) {
+      initialiseSellItBack()
+        .then((data) => {
+          console.log(data);
+          setSellItBackInitialised(!data.Accepted);
+          console.log(sellItBackInitialised);
+        })
+        .catch((error) => {
+          console.log(error);
         });
     }
   });
@@ -50,10 +94,10 @@ export default function Scanner() {
         facing='back'
         onBarcodeScanned={({ data }) => {
           if (barcode != data) {
-            console.log('data', data);
+            //console.log('data', data);
             setBarcode(data);
 
-            getItemDetails(data)
+            getSellItBackOffer({ ISBN: data })
               .then((data) => {
                 //console.log('Item Details response', data);
                 setImageSource(data.ImageURL);
@@ -66,21 +110,72 @@ export default function Scanner() {
 
             getWeBuyBooksOffer({ ISBN: barcode, token: weBuyBooksToken })
               .then((weBuyBooksResponse) => {
-                console.log('BuyBooksResponse response ', weBuyBooksResponse);
-                setWeBuyBooksOffer(weBuyBooksResponse.price);
+                //console.log('BuyBooksResponse response ', weBuyBooksResponse);
+                setWeBuyBooksOffer(weBuyBooksResponse.item.price);
+                setWeBuyBooksTitle(weBuyBooksResponse.item.title);
+                setWeBuyBooksImage(weBuyBooksResponse.item.imageUrl);
               })
               .catch((error) => {
-                console.log('error happened in WeBuy Books request: ', error);
+                //console.log('error happened in WeBuy Books request: ', error);
+                setWeBuyBooksOffer('X');
+                setWeBuyBooksTitle('X');
+                setWeBuyBooksImage('X');
                 if (error.error == 'not_accepted') {
                   setWeBuyBooksOffer('No Offer');
-                }
-                if (error.error == 'not_found') {
+                } else if (error.error == 'not_found') {
                   setWeBuyBooksOffer('Unrecognised');
+                } else if (error.error == 'in_basket') {
+                  setWeBuyBooksOffer('Scanned Already');
                 }
+              });
+
+            getZiffitOffer({ ISBN: barcode, token: ziffitToken })
+              .then((ziffitResponse) => {
+                console.log('Ziffit response ', ziffitResponse);
+                setZiffitOffer(ziffitResponse.cartItem.offer);
+                setZiffitTitle(ziffitResponse.cartItem.author);
+                setZiffitImage("X");
+              })
+              .catch((error) => {
+                console.log('error happened in Ziffit request: ', error);
+                setZiffitOffer('X');
+                setZiffitTitle('X');
+                setZiffitImage('X');
+                if (error.error.errorCode == 'ItemRejectedError') {
+                  const errorMessage = error.error.errorMessages[0];
+                  console.log(errorMessage);
+                  if (errorMessage.includes("N/A")){
+                     setZiffitOffer('Unrecognised');
+                  }
+                  else {
+                    setZiffitOffer('No Offer');
+                  }
+                }
+              });
+
+            getSellItBackOffer({ ISBN: data, getOffer: true })
+              .then((sellItBackResponse) => {
+                //console.log('sellItBackResponse response ', sellItBackResponse);
+                if (sellItBackResponse.Accepted === 1) {
+                  setSellItBackOffer(sellItBackResponse.Price);
+                  setSellItBackTitle(sellItBackResponse.Title);
+                  setSellItBackImage(sellItBackResponse.ImageURL);
+                } else if (!sellItBackResponse.Accepted) {
+                  setSellItBackOffer('No Offer');
+                } else if (sellItBackResponse.Accepted === -1) {
+                  setSellItBackOffer('Unrecognised');
+                } else {
+                  setSellItBackOffer('Error!');
+                }
+              })
+              .catch((error) => {
+                console.log('error happened in sellItBack request: ', error);
               });
           }
         }}
       />
+
+      {/* ITEM DETAILS */}
       <View style={styles.itemDetails}>
         <Image
           source={{
@@ -94,16 +189,48 @@ export default function Scanner() {
         </View>
       </View>
 
-      <View syle={styles.offer}>
-        <Text>{weBuyBooksOffer}</Text>
+      {/* WE BUY BOOKS OFFER */}
+
+      <View style={styles.itemDetails}>
+        <Image
+          source={{
+            uri: weBuyBooksImage,
+          }}
+          style={styles.image}
+        />
+        <View>
+          <Text style={styles.author}>{weBuyBooksTitle}</Text>
+          <Text style={styles.title}>{weBuyBooksOffer}</Text>
+        </View>
       </View>
 
-      <View syle={styles.offer}>
-        <Text>{ZiffitOffer}</Text>
+      {/* ZIFFIT OFFER */}
+
+      <View style={styles.itemDetails}>
+        <Image
+          source={{
+            uri: ZiffitImage,
+          }}
+          style={styles.image}
+        />
+        <View>
+          <Text style={styles.author}>{ziffitTitle}</Text>
+          <Text style={styles.title}>{ziffitOffer}</Text>
+        </View>
       </View>
 
-      <View syle={styles.offer}>
-        <Text>{sellItBackOffer}</Text>
+      {/* SELLITBACK OFFER */}
+      <View style={styles.itemDetails}>
+        <Image
+          source={{
+            uri: sellItBackImage,
+          }}
+          style={styles.image}
+        />
+        <View>
+          <Text style={styles.author}>{sellItBackTitle}</Text>
+          <Text style={styles.title}>{sellItBackOffer}</Text>
+        </View>
       </View>
     </View>
   );
