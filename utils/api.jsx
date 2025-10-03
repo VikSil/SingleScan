@@ -1,21 +1,5 @@
 import axios from 'axios';
 
-export const getSellItBackOffer = (details) => {
-  let URL = `http://sellitback.com/Sellitback.svc/SearchItem?EAN=${details.ISBN}`;
-  if (details.getOffer) {
-    const URL = `http://sellitback.com/Sellitback.svc/SearchItem?CartID=1&EAN=${details.ISBN}`;
-  }
-
-  return axios
-    .get(URL)
-    .then((response) => {
-      return response.data;
-    })
-    .catch((error) => {
-      throw error;
-    });
-};
-
 export const getWeBuyBooksToken = () => {
   const URL = 'https://api2.revivalbooks.co.uk/auth/request-token';
   const json = { 'grant_type': 'anonymous_basket' };
@@ -57,24 +41,29 @@ export const getWeBuyBooksOffer = (details) => {
 
 export const getZiffitToken = () => {
   const URL = 'https://sell.worldofbooks.com/en-gb/basket';
-    const headers = {
+  const headers = {
     'Content-Type': 'application/json',
-    'X-Region-Id': "GB",
+    'X-Region-Id': 'GB',
   };
 
   return axios
     .get(URL, {
-      withCredentials: false,headers: headers
+      withCredentials: false,
+      headers: headers,
     })
     .then((response) => {
       const setCookieHeader = response.headers['set-cookie'];
       let cookie = '';
       if (response.headers['set-cookie']) {
-        cookie = setCookieHeader[0].split(";")[0].trim().replace("authTokenGB=","");
-
+        cookie = setCookieHeader[0]
+          .split(';')[0]
+          .trim()
+          .replace('authTokenGB=', '');
       } else {
         console.log('No cookie found in response');
-        throw {"error": {"response": {"data":"No cookie found in response"}}};
+        throw {
+          'error': { 'response': { 'data': 'No cookie found in response' } },
+        };
       }
       return cookie;
     })
@@ -85,11 +74,15 @@ export const getZiffitToken = () => {
 
 export const getZiffitOffer = (details) => {
   const URL = 'https://ziffit-recommerce-gateway-eu.ziffit.com/v1/me/cart/scan';
-  const json = {"ean": details.ISBN, "scanOrigin": "ZIFFIT", "scanType": "MANUAL_ENTRY"};
+  const json = {
+    'ean': details.ISBN,
+    'scanOrigin': 'ZIFFIT',
+    'scanType': 'MANUAL_ENTRY',
+  };
   const token = `Bearer ${details.token}`;
   const headers = {
     'Content-Type': 'application/json',
-    'X-Region-Id': "GB",
+    'X-Region-Id': 'GB',
     'Authorization': token,
   };
 
@@ -114,5 +107,36 @@ export const initialiseSellItBack = () => {
     })
     .catch((error) => {
       throw error;
+    });
+};
+
+export const getSellItBackOffer = (details) => {
+  let URL = `http://sellitback.com/Sellitback.svc/SearchItem?EAN=${details.ISBN}`;
+  if (details.getOffer) {
+    const URL = `http://sellitback.com/Sellitback.svc/SearchItem?CartID=1&EAN=${details.ISBN}`;
+  }
+
+  return axios
+    .get(URL)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+
+export const getCexOffer = (ISBN) => {
+  const URL = `https://search.webuy.io/1/indexes/*/queries`;
+
+  const json = `{"requests":[{"indexName":"prod_cex_uk","params":"attributesToRetrieve=%5B%22boxName%22%2C%22imageUrls%22%2C%22cashPriceCalculated%22%5D&page=0&query=${ISBN}&userToken=anonymous-32ea09fc-f726-4a8d-871e-b159c75dbf93"}]}`;
+
+  return axios
+    .post(URL, json)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      throw error.response.data;
     });
 };
