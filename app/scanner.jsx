@@ -6,10 +6,11 @@ import {
   getSellItBackOffer,
   getWeBuyBooksToken,
   getWeBuyBooksOffer,
-  initialiseSellItBack,
   getZiffitToken,
   getZiffitOffer,
 } from '../utils/api';
+
+import { getSellItBackCartID } from '../utils/helper-functions';
 
 export default function Scanner() {
   const [barcode, setBarcode] = useState('Scan a barcode');
@@ -18,18 +19,17 @@ export default function Scanner() {
   const [weBuyBooksDash, setWeBuyBooksDash] = useState(null);
   const [ziffitToken, setZiffitToken] = useState(null);
   const [ziffitDash, setZiffitDash] = useState(null);
-
-  const [sellItBackInitialised, setSellItBackInitialised] = useState(false);
-  const [readyToScan, setReadyToScan] = useState(false);
+  const [sellItBackCart, setSellItBackCart] = useState(null);
+  const [sellItBackDash, setSellItBackDash] = useState(null);
 
   const [weBuyBooksAuthor, setWeBuyBooksAuthor] = useState('');
   const [ziffitAuthor, setZiffitAuthor] = useState('');
-  const [sellItBackAuthor, setSellItBackAuthor] = useState('---');
+  const [sellItBackAuthor, setSellItBackAuthor] = useState('');
   const [cexAuthor, setCexAuthor] = useState('---');
 
   const [weBuyBooksTitle, setWeBuyBooksTitle] = useState('');
   const [ziffitTitle, setZiffitTitle] = useState('');
-  const [sellItBackTitle, setSellItBackTitle] = useState('---');
+  const [sellItBackTitle, setSellItBackTitle] = useState('');
   const [cexTitle, setCexTitle] = useState('---');
 
   const [weBuyBooksImage, setWeBuyBooksImage] = useState(
@@ -45,12 +45,13 @@ export default function Scanner() {
     'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
   );
 
-  const [weBuyBooks1Offer, setWeBuyBooks1Offer] = useState('');
+  const [weBuyBooksOffer, setWeBuyBooksOffer] = useState('');
   const [weBuyBooks4Offer, setWeBuyBooks4Offer] = useState('');
-  const [ziffit1Offer, setZiffit1Offer] = useState('');
+  const [ziffitOffer, setZiffitOffer] = useState('');
   const [ziffit4Offer, setZiffit4Offer] = useState('');
+  const [sellItBackOffer, setSellItBackOffer] = useState('');
+  const [sellItBack4Offer, setSellItBack4Offer] = useState('');
 
-  const [sellItBackOffer, setSellItBackOffer] = useState('0.0');
   const [cexOffer, setCexOffer] = useState('0.0');
 
   useEffect(() => {
@@ -87,6 +88,22 @@ export default function Scanner() {
       }
     };
 
+    const initialiseSellItBackCart = async () => {
+      const cartID = getSellItBackCartID();
+      setSellItBackCart(cartID);
+
+      const barcodes = [
+        '9780753510339', //GI Guide
+        '9780552992107', //Harnessing Peacock
+        '9780553513363', //Fox in Socks
+        '9780349105635', //Mary Breasted
+      ];
+      for (let i = 0; i < barcodes.length; i++) {
+        const requestJSON = { 'ISBN': barcodes[i], 'cartID': cartID };
+        await getSellItBackOffer(requestJSON);
+      }
+    };
+
     if (weBuyBooksToken === null) {
       getBB4Token().catch((error) => {
         console.log(error);
@@ -99,32 +116,9 @@ export default function Scanner() {
       });
     }
 
-    // if (ziffitToken === null) {
-    //   getZiffitToken()
-    //     .then((data) => {
-    //       console.log(data);
-    //       setZiffitToken(data);
-    //       if (weBuyBooksToken != null) {
-    //         setReadyToScan(true);
-    //       }
-    //       console.log(ziffitToken);
-    //     })
-    //     .catch((error) => {
-    //       console.log(error);
-    //     });
-    // }
-
-    // if (!sellItBackInitialised) {
-    //   initialiseSellItBack()
-    //     .then((data) => {
-    //       console.log(data);
-    //       setSellItBackInitialised(!data.Accepted);
-    //       console.log(sellItBackInitialised);
-    //     })
-    //     .catch((error) => {
-    //       console.log(error);
-    //     });
-    // }
+    if (sellItBackCart === null) {
+      initialiseSellItBackCart();
+    }
   }, []);
 
   return (
@@ -142,7 +136,7 @@ export default function Scanner() {
             setWeBuyBooksImage('');
             setWeBuyBooksAuthor('');
             setWeBuyBooksTitle('');
-            setWeBuyBooks1Offer('');
+            setWeBuyBooksOffer('');
             setWeBuyBooks4Offer('');
             setWeBuyBooksDash('');
 
@@ -154,7 +148,7 @@ export default function Scanner() {
 
               getWeBuyBooksOffer(requestJSON)
                 .then((weBuyBooksResponse) => {
-                  setWeBuyBooks1Offer(weBuyBooksResponse.item.price);
+                  setWeBuyBooksOffer(weBuyBooksResponse.item.price);
                   setWeBuyBooksTitle(weBuyBooksResponse.item.title);
                   setWeBuyBooksImage(weBuyBooksResponse.item.imageUrl);
 
@@ -169,34 +163,34 @@ export default function Scanner() {
                       setWeBuyBooks4Offer(weBuyBooks4Response.item.price);
                     })
                     .catch((error) => {
-                      setWeBuyBooksDash('—');
                       if (error.error == 'not_accepted') {
+                        setWeBuyBooksDash('—');
                         setWeBuyBooks4Offer('0.00');
                       } else if (error.error == 'in_basket') {
+                        setWeBuyBooksDash('—');
                         setWeBuyBooks4Offer('R');
                       } else if (error.error == 'not_found') {
-                        setWeBuyBooks4Offer('?');
                       } else {
+                        setWeBuyBooksDash('—');
                         setWeBuyBooks4Offer('X');
                       }
                     });
                 })
                 .catch((error) => {
-                  console.log('WWB error: ', error);
                   if (error.error == 'not_accepted') {
-                    setWeBuyBooks1Offer('0.00');
+                    setWeBuyBooksOffer('0.00');
                     setWeBuyBooksAuthor('No Offer');
                     setWeBuyBooksImage(
                       'https://i.postimg.cc/Bnj8DR83/3407031.png'
                     );
                   } else if (error.error == 'not_found') {
-                    setWeBuyBooks1Offer('?');
+                    setWeBuyBooksOffer('?');
                     setWeBuyBooksAuthor('Unknown Item');
                     setWeBuyBooksImage(
                       'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
                     );
                   } else {
-                    setWeBuyBooks1Offer('X');
+                    setWeBuyBooksOffer('X');
                     setWeBuyBooksAuthor('Error!');
                     setWeBuyBooksImage(
                       'https://i.postimg.cc/Bnj8DR83/3407031.png'
@@ -210,7 +204,7 @@ export default function Scanner() {
             setZiffitImage('');
             setZiffitAuthor('');
             setZiffitTitle('');
-            setZiffit1Offer('');
+            setZiffitOffer('');
             setZiffitDash('');
             setZiffit4Offer('');
 
@@ -222,7 +216,7 @@ export default function Scanner() {
 
               getZiffitOffer(requestJSON)
                 .then((ziffitResponse) => {
-                  setZiffit1Offer(ziffitResponse.cartItem.offer);
+                  setZiffitOffer(ziffitResponse.cartItem.offer);
                   setZiffitAuthor(ziffitResponse.cartItem.author);
                   setZiffitTitle(ziffitResponse.cartItem.title);
                   setZiffitImage(
@@ -254,7 +248,7 @@ export default function Scanner() {
                     const errorMessage = error.error.errorMessages[0];
 
                     if (errorMessage.includes('N/A')) {
-                      setZiffit1Offer('');
+                      setZiffitOffer('');
                       setZiffitDash('');
                       setZiffit4Offer('');
                       setZiffitAuthor('Unknown Item');
@@ -263,7 +257,7 @@ export default function Scanner() {
                         'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
                       );
                     } else {
-                      setZiffit1Offer('0.00');
+                      setZiffitOffer('0.00');
                       setZiffitAuthor('No Offer');
                       setZiffitImage(
                         'https://i.postimg.cc/Bnj8DR83/3407031.png'
@@ -288,28 +282,85 @@ export default function Scanner() {
                 });
             });
 
-            // getSellItBackOffer({ ISBN: data, getOffer: true })
-            //   .then((sellItBackResponse) => {
-            //     //console.log('sellItBackResponse response ', sellItBackResponse);
-            //     if (sellItBackResponse.Accepted === 1) {
-            //       setSellItBackOffer(sellItBackResponse.Price);
-            //       setSellItBackTitle(sellItBackResponse.Title);
-            //       setSellItBackImage(sellItBackResponse.ImageURL);
-            //       setSellItBackAuthor(sellItBackResponse.Author);
-            //     } else if (!sellItBackResponse.Accepted) {
-            //       setSellItBackOffer('No Offer');
-            //     } else if (sellItBackResponse.Accepted === -1) {
-            //       setSellItBackOffer('?');
-            //     } else {
-            //       setSellItBackOffer('Error!');
-            //     }
-            //   })
-            //   .catch((error) => {
-            //     console.log('error happened in sellItBack request: ', error);
-            //     setSellItBackImage(
-            //       'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-            //     );
-            //   });
+            /* SELL IT BACK OFFER  */
+
+            setSellItBackImage('');
+            setSellItBackAuthor('');
+            setSellItBackTitle('');
+            setSellItBackOffer('');
+            setSellItBack4Offer('');
+            setSellItBackDash('');
+
+            const tempSellItBackCart = getSellItBackCartID();
+
+            getSellItBackOffer({
+              'ISBN': data,
+              'cartID': tempSellItBackCart,
+            })
+              .then((sellItBackResponse) => {
+                if (sellItBackResponse.Accepted === 1) {
+                  setSellItBackOffer(sellItBackResponse.Price);
+                  setSellItBackTitle(
+                    sellItBackResponse.Title === null
+                      ? 'Unknown Title'
+                      : sellItBackResponse.Title
+                  );
+                  setSellItBackImage(
+                    sellItBackResponse.ImageURL === null
+                      ? 'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
+                      : sellItBackResponse.ImageURL
+                  );
+                  setSellItBackAuthor(
+                    sellItBackResponse.Author === null
+                      ? 'Unknown Author'
+                      : sellItBackResponse.Author
+                  );
+
+                  const requestJSON = {
+                    'ISBN': data,
+                    'cartID': sellItBackCart,
+                  };
+
+                  getSellItBackOffer(requestJSON).then(
+                    (sellItBack4Response) => {
+                      if (sellItBack4Response.Accepted === 1) {
+                        setSellItBackDash('—');
+                        setSellItBack4Offer(sellItBack4Response.Price);
+                      } else if (!sellItBack4Response.Accepted) {
+                        setSellItBackDash('—');
+                        setSellItBack4Offer('0.00');
+                      } else {
+                        setSellItBackDash('—');
+                        setSellItBack4Offer('X');
+                      }
+                    }
+                  );
+                } else if (!sellItBackResponse.Accepted) {
+                  setSellItBackOffer('0.00');
+                  setSellItBackAuthor('No Offer');
+                  setSellItBackImage(
+                    'https://i.postimg.cc/Bnj8DR83/3407031.png'
+                  );
+                } else if (sellItBackResponse.Accepted === -1) {
+                  setSellItBackOffer('?');
+                  setSellItBackAuthor('Unknown Item');
+                  setSellItBackImage(
+                    'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
+                  );
+                } else {
+                  setSellItBackOffer('X');
+                  setSellItBackAuthor('Error!');
+                  setSellItBackImage(
+                    'https://i.postimg.cc/Bnj8DR83/3407031.png'
+                  );
+                }
+              })
+
+              .catch((error) => {
+                sellItBackOffer('X');
+                sellItBackAuthor('Error!');
+                setSellItBackImage('https://i.postimg.cc/Bnj8DR83/3407031.png');
+              });
           }
         }}
       />
@@ -336,7 +387,7 @@ export default function Scanner() {
         <View style={styles.offerDetails}>
           <Text style={styles.vendor}>We Buy Books</Text>
           <Text style={[styles.offer, styles.splitOffer]}>
-            {weBuyBooks1Offer}
+            {weBuyBooksOffer}
           </Text>
           <Text style={[styles.offer, styles.dash]}>{weBuyBooksDash}</Text>
           <Text style={[styles.offer, styles.splitOffer]}>
@@ -366,7 +417,7 @@ export default function Scanner() {
         </View>
         <View style={styles.offerDetails}>
           <Text style={styles.vendor}>Ziffit</Text>
-          <Text style={[styles.offer, styles.splitOffer]}>{ziffit1Offer}</Text>
+          <Text style={[styles.offer, styles.splitOffer]}>{ziffitOffer}</Text>
           <Text style={[styles.offer, styles.dash]}>{ziffitDash}</Text>
           <Text style={[styles.offer, styles.splitOffer]}>{ziffit4Offer}</Text>
         </View>
@@ -383,12 +434,22 @@ export default function Scanner() {
           />
           <View style={styles.bookDetails}>
             <Text style={styles.author}>{sellItBackAuthor}</Text>
-            <Text style={styles.title}>{sellItBackTitle}</Text>
+            <Text style={styles.title}>
+              {sellItBackTitle.length > 50
+                ? sellItBackTitle.substring(0, 50) + '...'
+                : sellItBackTitle}
+            </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
           <Text style={styles.vendor}>Sell It Back</Text>
-          <Text style={styles.splitOffer}>{sellItBackOffer}</Text>
+          <Text style={[styles.offer, styles.splitOffer]}>
+            {sellItBackOffer}
+          </Text>
+          <Text style={[styles.offer, styles.dash]}>{sellItBackDash}</Text>
+          <Text style={[styles.offer, styles.splitOffer]}>
+            {sellItBack4Offer}
+          </Text>
         </View>
       </View>
 

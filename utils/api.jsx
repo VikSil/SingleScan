@@ -96,25 +96,8 @@ export const getZiffitOffer = (details) => {
     });
 };
 
-export const initialiseSellItBack = () => {
-  const URL =
-    'http://sellitback.com/Sellitback.svc/SearchItem?CartID=1&EAN=9799984230053';
-
-  return axios
-    .get(URL)
-    .then((response) => {
-      return response.data;
-    })
-    .catch((error) => {
-      throw error;
-    });
-};
-
 export const getSellItBackOffer = (details) => {
-  let URL = `http://sellitback.com/Sellitback.svc/SearchItem?EAN=${details.ISBN}`;
-  if (details.getOffer) {
-    const URL = `http://sellitback.com/Sellitback.svc/SearchItem?CartID=1&EAN=${details.ISBN}`;
-  }
+  const URL = `http://sellitback.com/Sellitback.svc/SearchItem?CartID=${details.cartID}&EAN=${details.ISBN}`;
 
   return axios
     .get(URL)
