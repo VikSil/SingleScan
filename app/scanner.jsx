@@ -8,6 +8,7 @@ import {
   getWeBuyBooksOffer,
   getZiffitToken,
   getZiffitOffer,
+  getCexOffer,
 } from '../utils/api';
 
 import { getSellItBackCartID } from '../utils/helper-functions';
@@ -25,12 +26,12 @@ export default function Scanner() {
   const [weBuyBooksAuthor, setWeBuyBooksAuthor] = useState('');
   const [ziffitAuthor, setZiffitAuthor] = useState('');
   const [sellItBackAuthor, setSellItBackAuthor] = useState('');
-  const [cexAuthor, setCexAuthor] = useState('---');
+  const [cexAuthor, setCexAuthor] = useState('');
 
   const [weBuyBooksTitle, setWeBuyBooksTitle] = useState('');
   const [ziffitTitle, setZiffitTitle] = useState('');
   const [sellItBackTitle, setSellItBackTitle] = useState('');
-  const [cexTitle, setCexTitle] = useState('---');
+  const [cexTitle, setCexTitle] = useState('');
 
   const [weBuyBooksImage, setWeBuyBooksImage] = useState(
     'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
@@ -51,8 +52,7 @@ export default function Scanner() {
   const [ziffit4Offer, setZiffit4Offer] = useState('');
   const [sellItBackOffer, setSellItBackOffer] = useState('');
   const [sellItBack4Offer, setSellItBack4Offer] = useState('');
-
-  const [cexOffer, setCexOffer] = useState('0.0');
+  const [cexOffer, setCexOffer] = useState('');
 
   useEffect(() => {
     const getBB4Token = async () => {
@@ -361,6 +361,37 @@ export default function Scanner() {
                 sellItBackAuthor('Error!');
                 setSellItBackImage('https://i.postimg.cc/Bnj8DR83/3407031.png');
               });
+
+            /* CEX OFFER  */
+
+            setCexImage('');
+            setCexAuthor('');
+            setCexTitle('');
+            setCexOffer('');
+
+            getCexOffer(data)
+              .then((cexResponse) => {
+                if (cexResponse.results[0].hits.length > 0) {
+                  setCexOffer(
+                    cexResponse.results[0].hits[0].cashPriceCalculated
+                  );
+                  setCexTitle(cexResponse.results[0].hits[0].boxName);
+                  setCexImage(cexResponse.results[0].hits[0].imageUrls.small);
+                } else {
+                  setCexAuthor('Unknown Item');
+                  setCexTitle('');
+                  setCexOffer('?');
+                  setCexImage(
+                    'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
+                  );
+                }
+              })
+              .catch((error) => {
+                setCexOffer('X');
+                setCexAuthor('Error!');
+                setCexTitle('');
+                setCexImage('https://i.postimg.cc/Bnj8DR83/3407031.png');
+              });
           }
         }}
       />
@@ -464,12 +495,16 @@ export default function Scanner() {
           />
           <View style={styles.bookDetails}>
             <Text style={styles.author}>{cexAuthor}</Text>
-            <Text style={styles.title}>{cexTitle}</Text>
+            <Text style={styles.title}>
+              {cexTitle.length > 50
+                ? cexTitle.substring(0, 50) + '...'
+                : cexTitle}
+            </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
           <Text style={styles.vendor}>Cex</Text>
-          <Text style={styles.splitOffer}>{cexOffer}</Text>
+          <Text style={[styles.offer, styles.singleOffer]}>{cexOffer}</Text>
         </View>
       </View>
     </View>
