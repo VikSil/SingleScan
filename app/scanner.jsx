@@ -15,17 +15,20 @@ export default function Scanner() {
   const [barcode, setBarcode] = useState('Scan a barcode');
 
   const [weBuyBooksToken, setWeBuyBooksToken] = useState(null);
+  const [weBuyBooksDash, setWeBuyBooksDash] = useState(null);
   const [ziffitToken, setZiffitToken] = useState(null);
+  const [ziffitDash, setZiffitDash] = useState(null);
+
   const [sellItBackInitialised, setSellItBackInitialised] = useState(false);
   const [readyToScan, setReadyToScan] = useState(false);
 
-  const [weBuyBooksAuthor, setWeBuyBooksAuthor] = useState('---');
-  const [ziffitAuthor, setZiffitAuthor] = useState('---');
+  const [weBuyBooksAuthor, setWeBuyBooksAuthor] = useState('');
+  const [ziffitAuthor, setZiffitAuthor] = useState('');
   const [sellItBackAuthor, setSellItBackAuthor] = useState('---');
   const [cexAuthor, setCexAuthor] = useState('---');
 
-  const [weBuyBooksTitle, setWeBuyBooksTitle] = useState('---');
-  const [ziffitTitle, setZiffitTitle] = useState('---');
+  const [weBuyBooksTitle, setWeBuyBooksTitle] = useState('');
+  const [ziffitTitle, setZiffitTitle] = useState('');
   const [sellItBackTitle, setSellItBackTitle] = useState('---');
   const [cexTitle, setCexTitle] = useState('---');
 
@@ -42,53 +45,86 @@ export default function Scanner() {
     'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
   );
 
-  const [weBuyBooksOffer, setWeBuyBooksOffer] = useState('0.0');
-  const [ziffitOffer, setZiffitOffer] = useState('0.0');
+  const [weBuyBooks1Offer, setWeBuyBooks1Offer] = useState('');
+  const [weBuyBooks4Offer, setWeBuyBooks4Offer] = useState('');
+  const [ziffit1Offer, setZiffit1Offer] = useState('');
+  const [ziffit4Offer, setZiffit4Offer] = useState('');
+
   const [sellItBackOffer, setSellItBackOffer] = useState('0.0');
   const [cexOffer, setCexOffer] = useState('0.0');
 
   useEffect(() => {
+    const getBB4Token = async () => {
+      const data = await getWeBuyBooksToken();
+      setWeBuyBooksToken(data.access_token);
+
+      const barcodes = [
+        '9780753510339', //GI Guide
+        '9780552992107', //Harnessing Peacock
+        '9780553513363', //Fox in Socks
+        '9780349105635', //Mary Breasted
+      ];
+      for (let i = 0; i < barcodes.length; i++) {
+        const requestJSON = { 'ISBN': barcodes[i], 'token': data.access_token };
+        await getWeBuyBooksOffer(requestJSON);
+      }
+    };
+
+    const getZToken = async () => {
+      const data = await getZiffitToken();
+      setZiffitToken(data);
+
+      const barcodes = [
+        '5051892011136', // Rumpus CD
+        '9780753510339', //GI Guide
+        '9780552992107', //Harnessing Peacock
+        '9780349105635', //Mary Breasted
+      ];
+
+      for (let i = 0; i < barcodes.length; i++) {
+        const requestJSON = { 'ISBN': barcodes[i], 'token': data };
+        await getZiffitOffer(requestJSON);
+      }
+    };
+
     if (weBuyBooksToken === null) {
-      getWeBuyBooksToken()
-        .then((data) => {
-          console.log(data);
-          setWeBuyBooksToken(data.access_token);
-          if (ziffitToken != null) {
-            setReadyToScan(true);
-          }
-          console.log(weBuyBooksToken);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      getBB4Token().catch((error) => {
+        console.log(error);
+      });
     }
 
     if (ziffitToken === null) {
-      getZiffitToken()
-        .then((data) => {
-          console.log(data);
-          setZiffitToken(data);
-          if (weBuyBooksToken != null) {
-            setReadyToScan(true);
-          }
-          console.log(ziffitToken);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      getZToken().catch((error) => {
+        console.log(error);
+      });
     }
 
-    if (!sellItBackInitialised) {
-      initialiseSellItBack()
-        .then((data) => {
-          console.log(data);
-          setSellItBackInitialised(!data.Accepted);
-          console.log(sellItBackInitialised);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+    // if (ziffitToken === null) {
+    //   getZiffitToken()
+    //     .then((data) => {
+    //       console.log(data);
+    //       setZiffitToken(data);
+    //       if (weBuyBooksToken != null) {
+    //         setReadyToScan(true);
+    //       }
+    //       console.log(ziffitToken);
+    //     })
+    //     .catch((error) => {
+    //       console.log(error);
+    //     });
+    // }
+
+    // if (!sellItBackInitialised) {
+    //   initialiseSellItBack()
+    //     .then((data) => {
+    //       console.log(data);
+    //       setSellItBackInitialised(!data.Accepted);
+    //       console.log(sellItBackInitialised);
+    //     })
+    //     .catch((error) => {
+    //       console.log(error);
+    //     });
+    // }
   }, []);
 
   return (
@@ -99,79 +135,181 @@ export default function Scanner() {
         facing='back'
         onBarcodeScanned={({ data }) => {
           if (barcode != data) {
-            //console.log('data', data);
             setBarcode(data);
 
-            getWeBuyBooksOffer({ ISBN: barcode, token: weBuyBooksToken })
-              .then((weBuyBooksResponse) => {
-                //console.log('BuyBooksResponse response ', weBuyBooksResponse);
-                setWeBuyBooksOffer(weBuyBooksResponse.item.price);
-                setWeBuyBooksTitle(weBuyBooksResponse.item.title);
-                setWeBuyBooksImage(weBuyBooksResponse.item.imageUrl);
-              })
-              .catch((error) => {
-                //console.log('error happened in WeBuy Books request: ', error);
-                setWeBuyBooksOffer('X');
-                setWeBuyBooksTitle('X');
-                setWeBuyBooksImage(
-                  'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                );
-                if (error.error == 'not_accepted') {
-                  setWeBuyBooksOffer('No Offer');
-                } else if (error.error == 'not_found') {
-                  setWeBuyBooksOffer('?');
-                } else if (error.error == 'in_basket') {
-                  setWeBuyBooksOffer('Scanned Already');
-                }
-              });
+            /* WE BUY BOOKS OFFER  */
 
-            getZiffitOffer({ ISBN: barcode, token: ziffitToken })
-              .then((ziffitResponse) => {
-                console.log('Ziffit response ', ziffitResponse);
-                setZiffitOffer(ziffitResponse.cartItem.offer);
-                setZiffitTitle(ziffitResponse.cartItem.author);
-                setZiffitImage('X');
-              })
-              .catch((error) => {
-                console.log('error happened in Ziffit request: ', error);
-                setZiffitOffer('X');
-                setZiffitTitle('X');
-                setZiffitImage(
-                  'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                );
-                if (error.error.errorCode == 'ItemRejectedError') {
-                  const errorMessage = error.error.errorMessages[0];
-                  console.log(errorMessage);
-                  if (errorMessage.includes('N/A')) {
-                    setZiffitOffer('?');
+            setWeBuyBooksImage('');
+            setWeBuyBooksAuthor('');
+            setWeBuyBooksTitle('');
+            setWeBuyBooks1Offer('');
+            setWeBuyBooks4Offer('');
+            setWeBuyBooksDash('');
+
+            getWeBuyBooksToken().then((weBuyBooksTokenResponse) => {
+              const requestJSON = {
+                'ISBN': data,
+                'token': weBuyBooksTokenResponse.access_token,
+              };
+
+              getWeBuyBooksOffer(requestJSON)
+                .then((weBuyBooksResponse) => {
+                  setWeBuyBooks1Offer(weBuyBooksResponse.item.price);
+                  setWeBuyBooksTitle(weBuyBooksResponse.item.title);
+                  setWeBuyBooksImage(weBuyBooksResponse.item.imageUrl);
+
+                  const requestJSON = {
+                    'ISBN': data,
+                    'token': weBuyBooksToken,
+                  };
+
+                  getWeBuyBooksOffer(requestJSON)
+                    .then((weBuyBooks4Response) => {
+                      setWeBuyBooksDash('—');
+                      setWeBuyBooks4Offer(weBuyBooks4Response.item.price);
+                    })
+                    .catch((error) => {
+                      setWeBuyBooksDash('—');
+                      if (error.error == 'not_accepted') {
+                        setWeBuyBooks4Offer('0.00');
+                      } else if (error.error == 'in_basket') {
+                        setWeBuyBooks4Offer('R');
+                      } else if (error.error == 'not_found') {
+                        setWeBuyBooks4Offer('?');
+                      } else {
+                        setWeBuyBooks4Offer('X');
+                      }
+                    });
+                })
+                .catch((error) => {
+                  console.log('WWB error: ', error);
+                  if (error.error == 'not_accepted') {
+                    setWeBuyBooks1Offer('0.00');
+                    setWeBuyBooksAuthor('No Offer');
+                    setWeBuyBooksImage(
+                      'https://i.postimg.cc/Bnj8DR83/3407031.png'
+                    );
+                  } else if (error.error == 'not_found') {
+                    setWeBuyBooks1Offer('?');
+                    setWeBuyBooksAuthor('Unknown Item');
+                    setWeBuyBooksImage(
+                      'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
+                    );
                   } else {
-                    setZiffitOffer('No Offer');
+                    setWeBuyBooks1Offer('X');
+                    setWeBuyBooksAuthor('Error!');
+                    setWeBuyBooksImage(
+                      'https://i.postimg.cc/Bnj8DR83/3407031.png'
+                    );
                   }
-                }
-              });
+                });
+            });
 
-            getSellItBackOffer({ ISBN: data, getOffer: true })
-              .then((sellItBackResponse) => {
-                //console.log('sellItBackResponse response ', sellItBackResponse);
-                if (sellItBackResponse.Accepted === 1) {
-                  setSellItBackOffer(sellItBackResponse.Price);
-                  setSellItBackTitle(sellItBackResponse.Title);
-                  setSellItBackImage(sellItBackResponse.ImageURL);
-                  setSellItBackAuthor(sellItBackResponse.Author);
-                } else if (!sellItBackResponse.Accepted) {
-                  setSellItBackOffer('No Offer');
-                } else if (sellItBackResponse.Accepted === -1) {
-                  setSellItBackOffer('?');
-                } else {
-                  setSellItBackOffer('Error!');
-                }
-              })
-              .catch((error) => {
-                console.log('error happened in sellItBack request: ', error);
-                setSellItBackImage(
-                  'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                );
-              });
+            /* ZIFFIT OFFER  */
+
+            setZiffitImage('');
+            setZiffitAuthor('');
+            setZiffitTitle('');
+            setZiffit1Offer('');
+            setZiffitDash('');
+            setZiffit4Offer('');
+
+            getZiffitToken().then((ZiffitResponse) => {
+              const requestJSON = {
+                ISBN: data,
+                token: ZiffitResponse,
+              };
+
+              getZiffitOffer(requestJSON)
+                .then((ziffitResponse) => {
+                  setZiffit1Offer(ziffitResponse.cartItem.offer);
+                  setZiffitAuthor(ziffitResponse.cartItem.author);
+                  setZiffitTitle(ziffitResponse.cartItem.title);
+                  setZiffitImage(
+                    'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
+                  );
+
+                  const requestJSON = {
+                    'ISBN': data,
+                    'token': ziffitToken,
+                  };
+
+                  getZiffitOffer(requestJSON)
+                    .then((ziffit4Response) => {
+                      setZiffitDash('—');
+                      setZiffit4Offer(ziffit4Response.cartItem.offer);
+                    })
+                    .catch((error) => {
+                      const errorMessage = error.error.errorMessages[0];
+
+                      if (errorMessage.includes('N/A')) {
+                      } else {
+                        setZiffitDash('—');
+                        setZiffit4Offer('0.00');
+                      }
+                    });
+                })
+                .catch((error) => {
+                  if (error.error.errorCode == 'ItemRejectedError') {
+                    const errorMessage = error.error.errorMessages[0];
+
+                    if (errorMessage.includes('N/A')) {
+                      setZiffit1Offer('');
+                      setZiffitDash('');
+                      setZiffit4Offer('');
+                      setZiffitAuthor('Unknown Item');
+                      setZiffitTitle('');
+                      setZiffitImage(
+                        'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
+                      );
+                    } else {
+                      setZiffit1Offer('0.00');
+                      setZiffitAuthor('No Offer');
+                      setZiffitImage(
+                        'https://i.postimg.cc/Bnj8DR83/3407031.png'
+                      );
+
+                      if (errorMessage.includes("Sorry, we're not buying ")) {
+                        const stringTail = ' at the moment,';
+                        const tailStart = errorMessage.indexOf(stringTail);
+                        const titleLength = tailStart - 24;
+                        setZiffitTitle(errorMessage.substring(24, titleLength));
+                      } else if (
+                        errorMessage.includes("Unfortunately we don't accept ")
+                      ) {
+                        setZiffitTitle(
+                          errorMessage.substring(30, errorMessage.length - 1)
+                        );
+                      } else {
+                        setZiffitAuthor('Item Not Accepted');
+                      }
+                    }
+                  }
+                });
+            });
+
+            // getSellItBackOffer({ ISBN: data, getOffer: true })
+            //   .then((sellItBackResponse) => {
+            //     //console.log('sellItBackResponse response ', sellItBackResponse);
+            //     if (sellItBackResponse.Accepted === 1) {
+            //       setSellItBackOffer(sellItBackResponse.Price);
+            //       setSellItBackTitle(sellItBackResponse.Title);
+            //       setSellItBackImage(sellItBackResponse.ImageURL);
+            //       setSellItBackAuthor(sellItBackResponse.Author);
+            //     } else if (!sellItBackResponse.Accepted) {
+            //       setSellItBackOffer('No Offer');
+            //     } else if (sellItBackResponse.Accepted === -1) {
+            //       setSellItBackOffer('?');
+            //     } else {
+            //       setSellItBackOffer('Error!');
+            //     }
+            //   })
+            //   .catch((error) => {
+            //     console.log('error happened in sellItBack request: ', error);
+            //     setSellItBackImage(
+            //       'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
+            //     );
+            //   });
           }
         }}
       />
@@ -188,12 +326,22 @@ export default function Scanner() {
           />
           <View style={styles.bookDetails}>
             <Text style={styles.author}>{weBuyBooksAuthor}</Text>
-            <Text style={styles.title}>{weBuyBooksTitle}</Text>
+            <Text style={styles.title}>
+              {weBuyBooksTitle.length > 50
+                ? weBuyBooksTitle.substring(0, 50) + '...'
+                : weBuyBooksTitle}
+            </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
           <Text style={styles.vendor}>We Buy Books</Text>
-          <Text style={styles.offer}>{weBuyBooksOffer}</Text>
+          <Text style={[styles.offer, styles.splitOffer]}>
+            {weBuyBooks1Offer}
+          </Text>
+          <Text style={[styles.offer, styles.dash]}>{weBuyBooksDash}</Text>
+          <Text style={[styles.offer, styles.splitOffer]}>
+            {weBuyBooks4Offer}
+          </Text>
         </View>
       </View>
 
@@ -209,12 +357,18 @@ export default function Scanner() {
           />
           <View style={styles.bookDetails}>
             <Text style={styles.author}>{ziffitAuthor}</Text>
-            <Text style={styles.title}>{ziffitTitle}</Text>
+            <Text style={styles.title}>
+              {ziffitTitle.length > 50
+                ? ziffitTitle.substring(0, 50) + '...'
+                : ziffitTitle}
+            </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
           <Text style={styles.vendor}>Ziffit</Text>
-          <Text style={styles.offer}>{ziffitOffer}</Text>
+          <Text style={[styles.offer, styles.splitOffer]}>{ziffit1Offer}</Text>
+          <Text style={[styles.offer, styles.dash]}>{ziffitDash}</Text>
+          <Text style={[styles.offer, styles.splitOffer]}>{ziffit4Offer}</Text>
         </View>
       </View>
 
@@ -233,8 +387,8 @@ export default function Scanner() {
           </View>
         </View>
         <View style={styles.offerDetails}>
-          <Text style={styles.vendor}>SellIt Back</Text>
-          <Text style={styles.offer}>{sellItBackOffer}</Text>
+          <Text style={styles.vendor}>Sell It Back</Text>
+          <Text style={styles.splitOffer}>{sellItBackOffer}</Text>
         </View>
       </View>
 
@@ -254,7 +408,7 @@ export default function Scanner() {
         </View>
         <View style={styles.offerDetails}>
           <Text style={styles.vendor}>Cex</Text>
-          <Text style={styles.offer}>{cexOffer}</Text>
+          <Text style={styles.splitOffer}>{cexOffer}</Text>
         </View>
       </View>
     </View>
@@ -300,6 +454,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     justifyContent: 'space-between',
+    paddingRight: 5,
   },
   itemDetails: {
     flexDirection: 'row',
@@ -309,6 +464,7 @@ const styles = StyleSheet.create({
   offerDetails: {
     width: 60,
     height: '100%',
+    flexShrink: 1,
   },
 
   bookDetails: {
@@ -317,6 +473,7 @@ const styles = StyleSheet.create({
 
   author: {
     fontWeight: 'bold',
+    color: '#483d8b',
   },
   title: {
     fontStyle: 'italic',
@@ -333,20 +490,36 @@ const styles = StyleSheet.create({
   vendor: {
     fontWeight: 'bold',
     textAlign: 'center',
-    height: '50%',
+    height: '40%',
     textAlignVertical: 'center',
     color: '#cd5c5c',
   },
 
   offer: {
     fontWeight: 'bold',
-    fontSize: 25,
     color: '#379e37ff',
-    // textAlign: 'center',
-    height: '50%',
-    //textAlignVertical:"center",
+    textAlign: 'center',
+    textAlignVertical: 'center',
 
+    paddingRight: '10%',
+  },
+
+  singleOffer: {
+    height: '60%',
+    fontSize: 20,
+    paddingLeft: '9%',
+  },
+
+  splitOffer: {
     paddingLeft: '15%',
-    paddingTop: '10%',
+    height: '20%',
+    fontSize: 18,
+  },
+
+  dash: {
+    height: '13%',
+    fontSize: 13,
+    marginTop: 0,
+    paddingTop: 0,
   },
 });
