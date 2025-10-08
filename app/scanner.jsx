@@ -1,4 +1,10 @@
-import { StyleSheet, Text, View, Image } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  useWindowDimensions,
+} from 'react-native';
 import { CameraView } from 'expo-camera';
 import { useEffect, useState } from 'react';
 
@@ -14,6 +20,8 @@ import {
 import { getSellItBackCartID } from '../utils/helper-functions';
 
 export default function Scanner() {
+  const { height } = useWindowDimensions();
+
   const [barcode, setBarcode] = useState('Scan a barcode');
 
   const [weBuyBooksToken, setWeBuyBooksToken] = useState(null);
@@ -216,6 +224,7 @@ export default function Scanner() {
 
               getZiffitOffer(requestJSON)
                 .then((ziffitResponse) => {
+
                   setZiffitOffer(ziffitResponse.cartItem.offer);
                   setZiffitAuthor(ziffitResponse.cartItem.author);
                   setZiffitTitle(ziffitResponse.cartItem.title);
@@ -227,7 +236,6 @@ export default function Scanner() {
                     'ISBN': data,
                     'token': ziffitToken,
                   };
-
                   getZiffitOffer(requestJSON)
                     .then((ziffit4Response) => {
                       setZiffitDash('—');
@@ -278,6 +286,15 @@ export default function Scanner() {
                         setZiffitAuthor('Item Not Accepted');
                       }
                     }
+                  } else if (error.error.errorCode == 'ValidationError') {
+                    setZiffitOffer('?');
+                    setZiffitDash('');
+                    setZiffit4Offer('');
+                    setZiffitAuthor('Unknown Item');
+                    setZiffitTitle('');
+                    setZiffitImage(
+                      'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
+                    );
                   }
                 });
             });
@@ -322,6 +339,7 @@ export default function Scanner() {
                   };
 
                   getSellItBackOffer(requestJSON).then(
+                    
                     (sellItBack4Response) => {
                       if (sellItBack4Response.Accepted === 1) {
                         setSellItBackDash('—');
@@ -404,19 +422,27 @@ export default function Scanner() {
             source={{
               uri: weBuyBooksImage,
             }}
-            style={styles.image}
+            style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
-            <Text style={styles.author}>{weBuyBooksAuthor}</Text>
+            <Text style={styles.author}>{weBuyBooksAuthor.length > 20
+                ? weBuyBooksAuthor.substring(0, 20) + '...'
+                : weBuyBooksAuthor}</Text>
             <Text style={styles.title}>
-              {weBuyBooksTitle.length > 50
-                ? weBuyBooksTitle.substring(0, 50) + '...'
+              {weBuyBooksTitle.length > 40
+                ? weBuyBooksTitle.substring(0, 40) + '...'
                 : weBuyBooksTitle}
             </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
-          <Text style={styles.vendor}>We Buy Books</Text>
+          <Text
+            numberOfLines={2}
+            adjustsFontSizeToFit={true}
+            style={styles.vendor}
+          >
+            We Buy Books
+          </Text>
           <Text style={[styles.offer, styles.splitOffer]}>
             {weBuyBooksOffer}
           </Text>
@@ -435,19 +461,27 @@ export default function Scanner() {
             source={{
               uri: ZiffitImage,
             }}
-            style={styles.image}
+            style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
-            <Text style={styles.author}>{ziffitAuthor}</Text>
+            <Text style={styles.author}>{ziffitAuthor.length > 20
+                ? ziffitAuthor.substring(0, 20) + '...'
+                : ziffitAuthor}</Text>
             <Text style={styles.title}>
-              {ziffitTitle.length > 50
-                ? ziffitTitle.substring(0, 50) + '...'
+              {ziffitTitle.length > 40
+                ? ziffitTitle.substring(0, 40) + '...'
                 : ziffitTitle}
             </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
-          <Text style={styles.vendor}>Ziffit</Text>
+          <Text
+            numberOfLines={2}
+            adjustsFontSizeToFit={true}
+            style={styles.vendor}
+          >
+            Ziffit
+          </Text>
           <Text style={[styles.offer, styles.splitOffer]}>{ziffitOffer}</Text>
           <Text style={[styles.offer, styles.dash]}>{ziffitDash}</Text>
           <Text style={[styles.offer, styles.splitOffer]}>{ziffit4Offer}</Text>
@@ -461,19 +495,27 @@ export default function Scanner() {
             source={{
               uri: sellItBackImage,
             }}
-            style={styles.image}
+            style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
-            <Text style={styles.author}>{sellItBackAuthor}</Text>
+            <Text style={styles.author}>{sellItBackAuthor.length > 20
+                ? sellItBackAuthor.substring(0, 20) + '...'
+                : sellItBackAuthor}</Text>
             <Text style={styles.title}>
-              {sellItBackTitle.length > 50
-                ? sellItBackTitle.substring(0, 50) + '...'
+              {sellItBackTitle.length > 40
+                ? sellItBackTitle.substring(0, 40) + '...'
                 : sellItBackTitle}
             </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
-          <Text style={styles.vendor}>Sell It Back</Text>
+          <Text
+            numberOfLines={2}
+            adjustsFontSizeToFit={true}
+            style={styles.vendor}
+          >
+            Sell It Back
+          </Text>
           <Text style={[styles.offer, styles.splitOffer]}>
             {sellItBackOffer}
           </Text>
@@ -491,19 +533,27 @@ export default function Scanner() {
             source={{
               uri: cexImage,
             }}
-            style={styles.image}
+            style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
-            <Text style={styles.author}>{cexAuthor}</Text>
+            <Text style={styles.author}>{cexAuthor.length > 20
+                ? cexAuthor.substring(0, 20) + '...'
+                : cexAuthor}</Text>
             <Text style={styles.title}>
-              {cexTitle.length > 50
-                ? cexTitle.substring(0, 50) + '...'
+              {cexTitle.length > 40
+                ? cexTitle.substring(0, 40) + '...'
                 : cexTitle}
             </Text>
           </View>
         </View>
         <View style={styles.offerDetails}>
-          <Text style={styles.vendor}>Cex</Text>
+          <Text
+            numberOfLines={2}
+            adjustsFontSizeToFit={true}
+            style={styles.vendor}
+          >
+            Cex
+          </Text>
           <Text style={[styles.offer, styles.singleOffer]}>{cexOffer}</Text>
         </View>
       </View>
@@ -579,7 +629,6 @@ const styles = StyleSheet.create({
   },
   image: {
     width: 80,
-    height: 80,
     resizeMode: 'contain',
   },
 
@@ -596,7 +645,6 @@ const styles = StyleSheet.create({
     color: '#379e37ff',
     textAlign: 'center',
     textAlignVertical: 'center',
-
     paddingRight: '10%',
   },
 
@@ -609,7 +657,6 @@ const styles = StyleSheet.create({
   splitOffer: {
     paddingLeft: '15%',
     height: '20%',
-    fontSize: 18,
   },
 
   dash: {
@@ -617,5 +664,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 0,
     paddingTop: 0,
+    paddingLeft: '15%',
   },
 });
