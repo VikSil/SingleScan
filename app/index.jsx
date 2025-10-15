@@ -1,39 +1,26 @@
-import { StyleSheet, Text, View, Pressable } from 'react-native';
-import { useCameraPermissions } from "expo-camera";
-import {Link} from "expo-router";
+import { Text, View, Pressable } from 'react-native';
+import { useCameraPermissions } from 'expo-camera';
+import { Link } from 'expo-router';
+import { styles } from '../assets/styles';
 
+export default function Home() {
+  const [permission, requestPermission] = useCameraPermissions();
+  const permissionGranted = Boolean(permission?.granted);
 
-export default function  Home() {
-
-    const [permission, requestPermission] = useCameraPermissions();
-    const permissionGranted= Boolean(permission?.granted);
-
-
-    return (
-        <View style = {styles.container}>
-            <Text>
-                Home
-            </Text>
-
-            <Pressable onPress={requestPermission}><Text style = {styles.button}>Request permissions</Text></Pressable>
-            <Link disabled = {!permissionGranted} href= "/scanner">Click Me!</Link>
-        </View>
-    )
+  return (
+    <View style={[styles.container, styles.frontPage]}>
+      <Pressable
+        onPress={requestPermission}
+        style={[permissionGranted ? styles.invisibleButton : styles.button]}
+      >
+        <Text style={styles.buttonText}>CAMERA PERMISSIONS</Text>
+      </Pressable>
+      <Link
+        style={[permissionGranted ? styles.button : styles.invisibleButton]}
+        href='/scanner'
+      >
+        START SCANNING
+      </Link>
+    </View>
+  );
 }
-
-
-const styles = StyleSheet.create({
-
-    container: {
-        flex:1,
-        alignItems: "center",
-        justifyContent: "center",
-        paddingVertical: 80,
-    },
-    button: {
-        color: "green",
-        fontSize: 17,
-        textAlign: "center",
-        padding:20,
-    }
-})
