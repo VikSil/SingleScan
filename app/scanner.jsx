@@ -43,18 +43,14 @@ export default function Scanner() {
   const [sellItBackTitle, setSellItBackTitle] = useState('');
   const [cexTitle, setCexTitle] = useState('');
 
-  const [weBuyBooksImage, setWeBuyBooksImage] = useState(
-    'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
-  );
-  const [ZiffitImage, setZiffitImage] = useState(
-    'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
-  );
-  const [sellItBackImage, setSellItBackImage] = useState(
-    'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
-  );
-  const [cexImage, setCexImage] = useState(
-    'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
-  );
+  const icon_book = require('../assets/scanner/icon_book.png');
+  const icon_X = require('../assets/scanner/icon_X.png');
+  const icon_unknown = require('../assets/scanner/icon_unknown.png');
+
+  const [weBuyBooksImage, setWeBuyBooksImage] = useState(icon_book);
+  const [ZiffitImage, setZiffitImage] = useState(icon_book);
+  const [sellItBackImage, setSellItBackImage] = useState(icon_book);
+  const [cexImage, setCexImage] = useState(icon_book);
 
   const [weBuyBooksOffer, setWeBuyBooksOffer] = useState('');
   const [weBuyBooks4Offer, setWeBuyBooks4Offer] = useState('');
@@ -198,8 +194,8 @@ export default function Scanner() {
             /* SELL IT BACK OFFER  */
             /* Slowest, so call it first */
 
-            setSellItBackImage('');
-            setSellItBackAuthor('');
+            setSellItBackImage(null);
+            setSellItBackAuthor('Checking...');
             setSellItBackTitle('');
             setSellItBackOffer('');
             setSellItBack4Offer('');
@@ -232,8 +228,8 @@ export default function Scanner() {
                     );
                     setSellItBackImage(
                       sellItBackResponse.ImageURL === null
-                        ? 'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
-                        : sellItBackResponse.ImageURL
+                        ? icon_book
+                        : { uri: sellItBackResponse.ImageURL }
                     );
                     setSellItBackAuthor(
                       sellItBackResponse.Author === null
@@ -268,21 +264,15 @@ export default function Scanner() {
                   } else if (!sellItBackResponse.Accepted) {
                     setSellItBackOffer('0.00');
                     setSellItBackAuthor('No Offer');
-                    setSellItBackImage(
-                      'https://i.postimg.cc/Bnj8DR83/3407031.png'
-                    );
+                    setSellItBackImage(icon_X);
                   } else if (sellItBackResponse.Accepted === -1) {
                     setSellItBackOffer('?');
                     setSellItBackAuthor('Unknown Item');
-                    setSellItBackImage(
-                      'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                    );
+                    setSellItBackImage(icon_unknown);
                   } else {
                     setSellItBackOffer('X');
                     setSellItBackAuthor('Error!');
-                    setSellItBackImage(
-                      'https://i.postimg.cc/Bnj8DR83/3407031.png'
-                    );
+                    setSellItBackImage(icon_X);
                   }
                 }
               })
@@ -293,13 +283,13 @@ export default function Scanner() {
 
                 sellItBackOffer('X');
                 sellItBackAuthor('Error!');
-                setSellItBackImage('https://i.postimg.cc/Bnj8DR83/3407031.png');
+                setSellItBackImage(icon_X);
               });
 
             /* WE BUY BOOKS OFFER  */
 
-            setWeBuyBooksImage('');
-            setWeBuyBooksAuthor('');
+            setWeBuyBooksImage(null);
+            setWeBuyBooksAuthor('Checking...');
             setWeBuyBooksTitle('');
             setWeBuyBooksOffer('');
             setWeBuyBooks4Offer('');
@@ -324,9 +314,12 @@ export default function Scanner() {
                 .then((weBuyBooksResponse) => {
                   setWeBuyBooksOfferReturned(true);
                   if (typeof weBuyBooksResponse !== 'undefined') {
+                    setWeBuyBooksAuthor('');
                     setWeBuyBooksOffer(weBuyBooksResponse.item.price);
                     setWeBuyBooksTitle(weBuyBooksResponse.item.title);
-                    setWeBuyBooksImage(weBuyBooksResponse.item.imageUrl);
+                    setWeBuyBooksImage({
+                      uri: weBuyBooksResponse.item.imageUrl,
+                    });
 
                     weBuyBooks4Controller.current = new AbortController();
                     const requestJSON = {
@@ -369,29 +362,23 @@ export default function Scanner() {
                   if (error.error == 'not_accepted') {
                     setWeBuyBooksOffer('0.00');
                     setWeBuyBooksAuthor('No Offer');
-                    setWeBuyBooksImage(
-                      'https://i.postimg.cc/Bnj8DR83/3407031.png'
-                    );
+                    setWeBuyBooksImage(icon_X);
                   } else if (error.error == 'not_found') {
                     setWeBuyBooksOffer('?');
                     setWeBuyBooksAuthor('Unknown Item');
-                    setWeBuyBooksImage(
-                      'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                    );
+                    setWeBuyBooksImage(icon_unknown);
                   } else {
                     setWeBuyBooksOffer('X');
                     setWeBuyBooksAuthor('Error!');
-                    setWeBuyBooksImage(
-                      'https://i.postimg.cc/Bnj8DR83/3407031.png'
-                    );
+                    setWeBuyBooksImage(icon_X);
                   }
                 });
             });
 
             /* ZIFFIT OFFER  */
 
-            setZiffitImage('');
-            setZiffitAuthor('');
+            setZiffitImage(null);
+            setZiffitAuthor('Checking...');
             setZiffitTitle('');
             setZiffitOffer('');
             setZiffitDash('');
@@ -419,9 +406,7 @@ export default function Scanner() {
                     setZiffitOffer(ziffitResponse.cartItem.offer);
                     setZiffitAuthor(ziffitResponse.cartItem.author);
                     setZiffitTitle(ziffitResponse.cartItem.title);
-                    setZiffitImage(
-                      'https://cdn-icons-png.freepik.com/512/9250/9250447.png'
-                    );
+                    setZiffitImage(icon_book);
 
                     ziffit4Controller.current = new AbortController();
 
@@ -461,15 +446,11 @@ export default function Scanner() {
                       setZiffit4Offer('');
                       setZiffitAuthor('Unknown Item');
                       setZiffitTitle('');
-                      setZiffitImage(
-                        'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                      );
+                      setZiffitImage(icon_unknown);
                     } else {
                       setZiffitOffer('0.00');
                       setZiffitAuthor('No Offer');
-                      setZiffitImage(
-                        'https://i.postimg.cc/Bnj8DR83/3407031.png'
-                      );
+                      setZiffitImage(icon_X);
 
                       if (errorMessage.includes("Sorry, we're not buying ")) {
                         const stringTail = ' at the moment,';
@@ -492,17 +473,15 @@ export default function Scanner() {
                     setZiffit4Offer('');
                     setZiffitAuthor('Unknown Item');
                     setZiffitTitle('');
-                    setZiffitImage(
-                      'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                    );
+                    setZiffitImage(icon_unknown);
                   }
                 });
             });
 
             /* CEX OFFER  */
 
-            setCexImage('');
-            setCexAuthor('');
+            setCexImage(null);
+            setCexAuthor('Checking...');
             setCexTitle('');
             setCexOffer('');
 
@@ -516,18 +495,19 @@ export default function Scanner() {
                 setCexOfferReturned(true);
                 if (typeof cexResponse !== 'undefined') {
                   if (cexResponse.results[0].hits.length > 0) {
+                    setCexAuthor('');
                     setCexOffer(
                       cexResponse.results[0].hits[0].cashPriceCalculated
                     );
                     setCexTitle(cexResponse.results[0].hits[0].boxName);
-                    setCexImage(cexResponse.results[0].hits[0].imageUrls.small);
+                    setCexImage({
+                      uri: cexResponse.results[0].hits[0].imageUrls.small,
+                    });
                   } else {
                     setCexAuthor('Unknown Item');
                     setCexTitle('');
                     setCexOffer('?');
-                    setCexImage(
-                      'https://cdn-icons-png.freepik.com/512/3407/3407031.png'
-                    );
+                    setCexImage(icon_unknown);
                   }
                 }
               })
@@ -536,7 +516,7 @@ export default function Scanner() {
                 setCexOffer('X');
                 setCexAuthor('Error!');
                 setCexTitle('');
-                setCexImage('https://i.postimg.cc/Bnj8DR83/3407031.png');
+                setCexImage(icon_X);
               });
           }
         }}
@@ -554,9 +534,7 @@ export default function Scanner() {
       <View style={styles.itemCard}>
         <View style={styles.itemDetails}>
           <Image
-            source={{
-              uri: weBuyBooksImage,
-            }}
+            source={weBuyBooksImage}
             style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
@@ -595,9 +573,7 @@ export default function Scanner() {
       <View style={styles.itemCard}>
         <View style={styles.itemDetails}>
           <Image
-            source={{
-              uri: ZiffitImage,
-            }}
+            source={ZiffitImage}
             style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
@@ -631,9 +607,7 @@ export default function Scanner() {
       <View style={styles.itemCard}>
         <View style={styles.itemDetails}>
           <Image
-            source={{
-              uri: sellItBackImage,
-            }}
+            source={sellItBackImage}
             style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
@@ -671,9 +645,7 @@ export default function Scanner() {
       <View style={styles.itemCard}>
         <View style={styles.itemDetails}>
           <Image
-            source={{
-              uri: cexImage,
-            }}
+            source={cexImage}
             style={[styles.image, { height: height * 0.08 }]}
           />
           <View style={styles.bookDetails}>
