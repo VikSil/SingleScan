@@ -595,7 +595,7 @@ export default function Scanner() {
             adjustsFontSizeToFit={true}
             style={styles.vendor}
           >
-            Ziffit
+            Sell Your Books
           </Text>
           <Text style={[styles.offer, styles.splitOffer]}>{ziffitOffer}</Text>
           <Text style={[styles.offer, styles.dash]}>{ziffitDash}</Text>
