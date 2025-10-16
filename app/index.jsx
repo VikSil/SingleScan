@@ -16,7 +16,7 @@ export default function Home() {
         <Text style={styles.buttonText}>CAMERA PERMISSIONS</Text>
       </Pressable>
       <Link
-        style={[permissionGranted ? styles.button : styles.invisibleButton]}
+        style={[permissionGranted ? [styles.button, styles.buttonText] : styles.invisibleButton]}
         href='/scanner'
       >
         START SCANNING
