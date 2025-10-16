@@ -117,7 +117,11 @@ export const getZiffitOffer = (details) => {
 };
 
 export const getSellItBackOffer = (details) => {
-  const URL = `http://sellitback.com/Sellitback.svc/SearchItem?CartID=${details.cartID}&EAN=${details.ISBN}`;
+  const URL = `https://sellitback.com/Sellitback.svc/SearchItem?CartID=${details.cartID}&EAN=${details.ISBN}`;
+  
+  const headers = {
+    'content-type': 'application/json',
+  };
 
   let signal = null;
 
@@ -126,7 +130,7 @@ export const getSellItBackOffer = (details) => {
   }
 
   return axios
-    .get(URL, { signal: signal })
+    .get(URL, {headers: headers, signal: signal})
     .then((response) => {
       return response.data;
     })
