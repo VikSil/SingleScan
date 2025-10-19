@@ -1,8 +1,7 @@
 {
   "expo": {
-    "scheme": "offer-checker",
-    "name": "OfferChecker",
-    "slug": "OfferChecker",
+    "name": "SingleScan",
+    "slug": "SingleScan",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,17 +21,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.CAMERA"
-      ],
-      "package": "com.anonymous.OfferChecker"
+      "package": "com.anonymous.SingleScan"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-router"
-    ]
+    }
   }
 }
