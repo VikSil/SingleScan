@@ -1,6 +1,6 @@
 # SingleScan mobile app
 
-If you happen to have books or DVDs that you no longer need, several UK retailers will buy your pre-owned items. Each retailer has their own mobile app that you use to can scan the book's barcode and find out what price they offer. If you wanted to find the best offer, that would mean a lot of scanning and switching between apps to find the best offer. 
+If you happen to have books or DVDs that you no longer need, several UK retailers will buy your pre-owned items. Each retailer has their own mobile app that you use to can scan the book's barcode and find out what price they offer. If you wanted to get the best price, that would mean a lot of scanning and switching between apps to find the best offer. 
 
 **SingleScan is a mobile application that allows you to find the best price for reselling books with a single scan of the barcode.**
 
