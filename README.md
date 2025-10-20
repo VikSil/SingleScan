@@ -25,11 +25,11 @@ Where available, each retailer card will display the book cover, author, title a
 </p>
 
 <p align = "center">
-<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/01_camera_permissions.jpg" alt="Statistics 101 website demo GIF"/>
-<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/02_start_scanning.jpg" alt="Statistics 101 website demo GIF"/>
-<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/03_new_screen.jpg" alt="Statistics 101 website demo GIF"/>
-<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/04_in_flight.jpg" alt="Statistics 101 website demo GIF"/>
-<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/05_done.jpg" alt="Statistics 101 website demo GIF"/>
+<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/01_camera_permissions.jpg" alt="Camera Permissions Screen"/>
+<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/02_start_scanning.jpg" alt="Start Scanning Screen"/>
+<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/03_new_screen.jpg" alt="New Camera Screen"/>
+<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/04_in_flight.jpg" alt="Request in Flight Screen"/>
+<img height= "500" src ="https://raw.githubusercontent.com/VikSil/SingleScan/refs/heads/trunk/screenshots/05_done.jpg" alt="Request Complete Screen"/>
 </p>
 
 
